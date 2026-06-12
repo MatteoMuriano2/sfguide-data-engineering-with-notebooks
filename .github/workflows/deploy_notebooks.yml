@@ -30,6 +30,7 @@ jobs:
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+          SNOWFLAKE_AUTHENTICATOR: PROGRAMMATIC_ACCESS_TOKEN
         run: |
           python scripts/deploy_notebooks.py DEMO_DB PROD_SCHEMA DEMO_PIPELINES_NP ./notebooks
           python scripts/deploy_task_dag.py DEMO_DB PROD_SCHEMA DEMO_PIPELINES_NP
