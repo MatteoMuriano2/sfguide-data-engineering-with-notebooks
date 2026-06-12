@@ -23,6 +23,7 @@ def get_snowpark_session() -> Session:
     - SNOWFLAKE_ACCOUNT (required for env var auth)
     - SNOWFLAKE_USER (required for env var auth)
     - SNOWFLAKE_PASSWORD (for password auth)
+    - SNOWFLAKE_AUTHENTICATOR (optional, e.g., 'PROGRAMMATIC_ACCESS_TOKEN' for PAT)
     - SNOWFLAKE_PRIVATE_KEY_PATH (for key-pair auth, alternative to password)
     - SNOWFLAKE_PRIVATE_KEY_PASSPHRASE (optional, for encrypted private keys)
     - SNOWFLAKE_WAREHOUSE (optional)
@@ -56,16 +57,22 @@ def get_snowpark_session() -> Session:
 def _create_session_from_env() -> Session:
     """
     Create a Snowpark session using environment variables.
-    Supports both password and key-pair authentication.
+    Supports password, PAT token (programmatic access token), and key-pair authentication.
     """
     connection_params = {
         "account": os.environ["SNOWFLAKE_ACCOUNT"],
         "user": os.environ["SNOWFLAKE_USER"],
     }
     
+    # Check if using authenticator (e.g., PROGRAMMATIC_ACCESS_TOKEN for PAT)
+    authenticator = os.environ.get("SNOWFLAKE_AUTHENTICATOR")
+    if authenticator:
+        connection_params["authenticator"] = authenticator
+        # When using PROGRAMMATIC_ACCESS_TOKEN, SNOWFLAKE_PASSWORD contains the token
+        connection_params["token"] = os.environ.get("SNOWFLAKE_PASSWORD", "")
+        print(f"Using authenticator: {authenticator}")
     # Authentication: prefer private key if available, otherwise use password
-    # NOTE: Haven't tested key pair auth yet
-    if os.environ.get("SNOWFLAKE_PRIVATE_KEY_PATH"):
+    elif os.environ.get("SNOWFLAKE_PRIVATE_KEY_PATH"):
         # Key-pair authentication
         private_key_path = os.environ["SNOWFLAKE_PRIVATE_KEY_PATH"]
         
